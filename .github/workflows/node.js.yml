@@ -1,0 +1,34 @@
+name: Wdrożenie na GitHub Pages
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Konfiguracja Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+        cache: 'npm'
+        
+    - name: Instalacja zależności
+      run: npm ci
+      
+    - name: Budowanie aplikacji
+      run: npm run build -- --configuration production --base-href=/weather-app-api/
+      
+    - name: Wdrożenie na GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: dist/weather-app-api/browser  # Katalog ze zbudowaną aplikacją
+        branch: gh-pages
+        clean: true  # Usuwa istniejące pliki przed wdrożeniem
