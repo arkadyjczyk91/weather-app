@@ -7,11 +7,12 @@ import {MaterialModule} from '../material/material.module';
 import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 import * as L from 'leaflet';
+import { WeatherEffectComponent } from '../weather-effect/weather-effect.component';
 
 @Component({
   selector: 'app-weather',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, WeatherEffectComponent],
   templateUrl: './weather.component.html',
   styleUrls: ['./weather.component.css']
 })
@@ -402,5 +403,31 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     return Object.entries(groupedByDate).map(([date, forecasts]) => ({date, forecasts}));
+  }
+
+  getDayTimePeriod(date: Date): string {
+    if (!date) return 'day';
+
+    const hour = date.getHours();
+    if (hour >= 5 && hour < 10) {
+      return 'morning';
+    } else if (hour >= 10 && hour < 17) {
+      return 'day';
+    } else if (hour >= 17 && hour < 21) {
+      return 'evening';
+    } else {
+      return 'night';
+    }
+  }
+
+  getDayTimePeriodName(date: Date): string {
+    const period = this.getDayTimePeriod(date);
+    switch (period) {
+      case 'morning': return 'ranek';
+      case 'day': return 'dzień';
+      case 'evening': return 'wieczór';
+      case 'night': return 'noc';
+      default: return '';
+    }
   }
 }

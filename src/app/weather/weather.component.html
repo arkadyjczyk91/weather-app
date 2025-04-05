@@ -1,3 +1,13 @@
+<app-weather-effect
+        *ngIf="weather"
+        [weatherCode]="weather.weather[0].icon"
+        [windSpeed]="weather.wind.speed"
+        [temperature]="weather.main.temp"
+        [pressure]="weather.main.pressure"
+        [humidity]="weather.main.humidity"
+        [time]="(locationLocalTime | date:'HH:mm') ?? '12:00'"
+        [duration]="60000">
+</app-weather-effect>
 <div class="weather-container">
     <mat-card>
         <mat-card-header>
@@ -51,7 +61,10 @@
                         </div>
                         <div class="time-box" *ngIf="locationLocalTime">
                             <h3>Czas w {{ weather.name }}</h3>
-                            <p class="time">{{ locationLocalTime | date:'HH:mm:ss' }}</p>
+                            <p class="time">
+                                {{ locationLocalTime | date:'HH:mm:ss' }}
+                                <span class="day-period">({{ getDayTimePeriodName(locationLocalTime) }})</span>
+                            </p>
                             <p class="date">{{ locationLocalTime | date:'dd.MM.yyyy' }}</p>
                             <p class="timezone">{{ locationTimezone }}</p>
                         </div>
