@@ -1,213 +1,235 @@
 <div class="weather-container">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Pogoda</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <!-- Układ dwukolumnowy -->
-      <div class="layout-grid">
-        <!-- Lewa kolumna -->
-        <div class="left-column">
-          <div class="search-container">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Wprowadź nazwę miasta</mat-label>
-              <input matInput [(ngModel)]="city" placeholder="np. Warszawa" (input)="onSearchInput($event)">
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>Pogoda</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <!-- Układ dwukolumnowy -->
+            <div class="layout-grid">
+                <!-- Lewa kolumna -->
+                <div class="left-column">
+                    <div class="search-container">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Wprowadź nazwę miasta</mat-label>
+                            <input matInput [(ngModel)]="city" placeholder="np. Warszawa"
+                                   (input)="onSearchInput($event)">
 
-              <mat-progress-spinner matSuffix *ngIf="isSearching" diameter="20"
-                                    mode="indeterminate"></mat-progress-spinner>
-            </mat-form-field>
+                            <mat-progress-spinner matSuffix *ngIf="isSearching" diameter="20"
+                                                  mode="indeterminate"></mat-progress-spinner>
+                        </mat-form-field>
 
-            <div class="search-results" *ngIf="searchResults && searchResults.length > 0">
-              <mat-list>
-                <mat-list-item *ngFor="let location of searchResults" (click)="selectLocation(location)">
-                  {{ location.name }}{{ location.state ? ', ' + location.state : '' }} ({{ location.country }})
-                </mat-list-item>
-              </mat-list>
-            </div>
-
-            <button mat-raised-button color="primary" (click)="getWeather()">
-              <mat-icon>search</mat-icon>
-              Sprawdź pogodę
-            </button>
-          </div>
-
-          <div class="error-message" *ngIf="errorMessage && !isSearching && city.length >= 3">{{ errorMessage }}</div>
-
-          <!-- Wyświetlanie czasu -->
-          <div class="time-container" *ngIf="weather">
-            <div class="time-box">
-              <h3>Czas lokalny użytkownika</h3>
-              <p class="time">{{ userLocalTime | date:'HH:mm:ss' }}</p>
-              <p class="date">{{ userLocalTime | date:'dd.MM.yyyy' }}</p>
-              <p class="timezone">{{ userLocalTime | date:'ZZZZ' }}</p>
-            </div>
-            <div class="time-box" *ngIf="locationLocalTime">
-              <h3>Czas w {{ weather.name }}</h3>
-              <p class="time">{{ locationLocalTime | date:'HH:mm:ss' }}</p>
-              <p class="date">{{ locationLocalTime | date:'dd.MM.yyyy' }}</p>
-              <p class="timezone">{{ locationTimezone }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Prawa kolumna - mapa -->
-        <div class="right-column">
-          <div class="map-section">
-            <div class="map-controls">
-              <mat-form-field appearance="outline">
-                <mat-label>Warstwa pogodowa</mat-label>
-                <mat-select [(ngModel)]="selectedLayer" (selectionChange)="onLayerChange()">
-                  <mat-option *ngFor="let layer of mapLayers" [value]="layer.value">
-                    {{ layer.label }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-              <p class="map-hint">Kliknij na mapę, aby sprawdzić pogodę dla wybranego miejsca</p>
-            </div>
-            <div id="map" class="map-container"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sekcja z informacjami o pogodzie -->
-      <div *ngIf="weather" class="weather-data">
-        <mat-tab-group [(selectedIndex)]="activeTab" animationDuration="0ms">
-          <mat-tab label="Aktualna pogoda">
-            <div class="weather-result">
-              <mat-card>
-                <mat-card-header>
-                  <mat-card-title>{{ weather.name }}, {{ weather.sys.country }}</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <div class="weather-details">
-                    <p class="temp">{{ weather.main.temp | number:'1.0-0' }} °C</p>
-                    <p class="desc">{{ weather.weather[0].description }}</p>
-                    <img [src]="'https://openweathermap.org/img/wn/' + weather.weather[0].icon + '@2x.png'"
-                         alt="Ikona pogody">
-                  </div>
-                  <mat-divider></mat-divider>
-                  <div class="additional-info">
-                    <p>
-                      <mat-icon>opacity</mat-icon>
-                      Wilgotność: {{ weather.main.humidity }}%
-                    </p>
-                    <p>
-                      <mat-icon>compress</mat-icon>
-                      Ciśnienie: {{ weather.main.pressure }} hPa
-                    </p>
-                    <p>
-                      <mat-icon>air</mat-icon>
-                      Wiatr: {{ weather.wind.speed }} m/s
-                    </p>
-                    <p>
-                      <mat-icon>thermostat</mat-icon>
-                      Temperatura odczuwalna: {{ weather.main.feels_like | number:'1.0-0' }} °C
-                    </p>
-                    <p>
-                      <mat-icon>visibility</mat-icon>
-                      Widoczność: {{ weather.visibility / 1000 | number:'1.1-1' }} km
-                    </p>
-                    <p *ngIf="weather.clouds">
-                      <mat-icon>cloud</mat-icon>
-                      Zachmurzenie: {{ weather.clouds.all }}%
-                    </p>
-                  </div>
-                  <div *ngIf="airPollution && airPollution.list && airPollution.list.length > 0"
-                       class="air-quality-section">
-                    <mat-divider></mat-divider>
-                    <h3>Jakość powietrza</h3>
-                    <div class="air-quality-info">
-                      <div class="aqi-badge"
-                           [style.background-color]="getAqiDescription(airPollution.list[0].main.aqi).color">
-                        {{ airPollution.list[0].main.aqi }}
-                      </div>
-                      <p class="aqi-description">{{ getAqiDescription(airPollution.list[0].main.aqi).text }}</p>
-                    </div>
-                    <div class="pollutants-grid">
-                      <div class="pollutant">
-                        <span class="label">PM2.5</span>
-                        <span class="value">{{ airPollution.list[0].components.pm2_5 | number:'1.1-1' }} μg/m³</span>
-                      </div>
-                      <div class="pollutant">
-                        <span class="label">PM10</span>
-                        <span class="value">{{ airPollution.list[0].components.pm10 | number:'1.1-1' }} μg/m³</span>
-                      </div>
-                      <div class="pollutant">
-                        <span class="label">NO2</span>
-                        <span class="value">{{ airPollution.list[0].components.no2 | number:'1.1-1' }} μg/m³</span>
-                      </div>
-                      <div class="pollutant">
-                        <span class="label">O3</span>
-                        <span class="value">{{ airPollution.list[0].components.o3 | number:'1.1-1' }} μg/m³</span>
-                      </div>
-                      <div class="pollutant">
-                        <span class="label">CO</span>
-                        <span class="value">{{ airPollution.list[0].components.co | number:'1.1-1' }} μg/m³</span>
-                      </div>
-                      <div class="pollutant">
-                        <span class="label">SO2</span>
-                        <span class="value">{{ airPollution.list[0].components.so2 | number:'1.1-1' }} μg/m³</span>
-                      </div>
-                    </div>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-            </div>
-          </mat-tab>
-
-
-          <mat-tab label="Prognoza 5-dniowa">
-            <div class="forecast-wrapper">
-              <div class="forecast-container" *ngIf="forecast">
-                <div *ngFor="let day of forecast" class="forecast-day">
-                  <h3 class="day-header">{{ day.date }}</h3>
-                  <div class="forecast-items">
-                    <mat-card *ngFor="let item of day.forecasts" class="forecast-card">
-                      <mat-card-header>
-                        <mat-card-title>{{ item.time }}</mat-card-title>
-                      </mat-card-header>
-                      <mat-card-content>
-                        <div class="forecast-item-content">
-                          <p class="temp">{{ item.temp | number:'1.0-0' }} °C</p>
-                          <p class="desc">{{ item.description }}</p>
-                          <img [src]="'https://openweathermap.org/img/wn/' + item.icon + '.png'"
-                               alt="Ikona pogody">
-                          <div class="forecast-details">
-                            <p>
-                              <mat-icon>opacity</mat-icon>
-                              {{ item.humidity }}%
-                            </p>
-                            <p>
-                              <mat-icon>compress</mat-icon>
-                              {{ item.pressure }} hPa
-                            </p>
-                            <p>
-                              <mat-icon>air</mat-icon>
-                              {{ item.wind }} m/s
-                            </p>
-                            <p>
-                              <mat-icon>thermostat</mat-icon>
-                              Odczuwalna: {{ item.feels_like | number:'1.0-0' }} °C
-                            </p>
-                            <p>
-                              <mat-icon>visibility</mat-icon>
-                              Widoczność: {{ item.visibility | number:'1.1-1' }} km
-                            </p>
-                            <p>
-                              <mat-icon>cloud</mat-icon>
-                              Zachmurzenie: {{ item.clouds }}%
-                            </p>
-                          </div>
+                        <div class="search-results" *ngIf="searchResults && searchResults.length > 0">
+                            <mat-list>
+                                <mat-list-item *ngFor="let location of searchResults"
+                                               (click)="selectLocation(location)">
+                                    {{ location.name }}{{ location.state ? ', ' + location.state : '' }}
+                                    ({{ location.country }})
+                                </mat-list-item>
+                            </mat-list>
                         </div>
-                      </mat-card-content>
-                    </mat-card>
-                  </div>
+
+                        <button mat-raised-button color="primary" (click)="getWeather()">
+                            <mat-icon>search</mat-icon>
+                            Sprawdź pogodę
+                        </button>
+                    </div>
+
+                    <div class="error-message"
+                         *ngIf="errorMessage && !isSearching && city.length >= 3">{{ errorMessage }}
+                    </div>
+
+                    <!-- Wyświetlanie czasu -->
+                    <div class="time-container" *ngIf="weather">
+                        <mat-card-header class="location-title">
+                            <mat-card-title>{{ weather.name }}, {{ weather.sys.country }}</mat-card-title>
+                        </mat-card-header>
+                        <div class="time-box">
+                            <h3>Czas lokalny użytkownika</h3>
+                            <p class="time">{{ userLocalTime | date:'HH:mm:ss' }}</p>
+                            <p class="date">{{ userLocalTime | date:'dd.MM.yyyy' }}</p>
+                            <p class="timezone">{{ userLocalTime | date:'ZZZZ' }}</p>
+                        </div>
+                        <div class="time-box" *ngIf="locationLocalTime">
+                            <h3>Czas w {{ weather.name }}</h3>
+                            <p class="time">{{ locationLocalTime | date:'HH:mm:ss' }}</p>
+                            <p class="date">{{ locationLocalTime | date:'dd.MM.yyyy' }}</p>
+                            <p class="timezone">{{ locationTimezone }}</p>
+                        </div>
+                    </div>
                 </div>
-              </div>
+
+                <!-- Prawa kolumna - mapa -->
+                <div class="right-column">
+                    <div class="map-section">
+                        <div class="map-controls">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Warstwa pogodowa</mat-label>
+                                <mat-select [(ngModel)]="selectedLayer" (selectionChange)="onLayerChange()">
+                                    <mat-option *ngFor="let layer of mapLayers" [value]="layer.value">
+                                        {{ layer.label }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <p class="map-hint">Kliknij na mapę, aby sprawdzić pogodę dla wybranego miejsca</p>
+                        </div>
+                        <div id="map" class="map-container"></div>
+                    </div>
+                </div>
             </div>
-          </mat-tab>
-        </mat-tab-group>
-      </div>
-    </mat-card-content>
-  </mat-card>
+
+            <!-- Sekcja z informacjami o pogodzie -->
+            <div *ngIf="weather" class="weather-data">
+                <mat-tab-group [(selectedIndex)]="activeTab" animationDuration="0ms">
+                    <mat-tab label="Aktualna pogoda">
+                        <div class="weather-result">
+                            <mat-card>
+                                <mat-card-content>
+                                    <div class="weather-details">
+                                        <div class="temp-section">
+                                            <p class="temp">{{ weather.main.temp | number:'1.0-0' }} °C</p>
+                                            <img [src]="'https://openweathermap.org/img/wn/' + weather.weather[0].icon + '@2x.png'"
+                                                 alt="Ikona pogody">
+                                        </div>
+                                        <p class="desc">{{ weather.weather[0].description }}</p>
+                                    </div>
+                                    <mat-divider></mat-divider>
+
+                                    <!-- Sekcja z detalami i jakością powietrza obok siebie -->
+                                    <div class="details-air-quality-container">
+                                        <div class="details-section">
+                                            <h3>Szczegółowe informacje</h3>
+                                            <div class="additional-info">
+                                                <p>
+                                                    <mat-icon>opacity</mat-icon>
+                                                    Wilgotność: {{ weather.main.humidity }}%
+                                                </p>
+                                                <p>
+                                                    <mat-icon>compress</mat-icon>
+                                                    Ciśnienie: {{ weather.main.pressure }} hPa
+                                                </p>
+                                                <p>
+                                                    <mat-icon>air</mat-icon>
+                                                    Wiatr: {{ weather.wind.speed }} m/s
+                                                </p>
+                                                <p>
+                                                    <mat-icon>thermostat</mat-icon>
+                                                    Temperatura
+                                                    odczuwalna: {{ weather.main.feels_like | number:'1.0-0' }} °C
+                                                </p>
+                                                <p>
+                                                    <mat-icon>visibility</mat-icon>
+                                                    Widoczność: {{ weather.visibility / 1000 | number:'1.1-1' }} km
+                                                </p>
+                                                <p *ngIf="weather.clouds">
+                                                    <mat-icon>cloud</mat-icon>
+                                                    Zachmurzenie: {{ weather.clouds.all }}%
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="air-quality-section"
+                                             *ngIf="airPollution && airPollution.list && airPollution.list.length > 0">
+                                            <h3>Jakość powietrza</h3>
+                                            <div class="air-quality-info">
+                                                <div class="aqi-badge"
+                                                     [style.background-color]="getAqiDescription(airPollution.list[0].main.aqi).color">
+                                                    {{ airPollution.list[0].main.aqi }}
+                                                </div>
+                                                <p class="aqi-description">{{ getAqiDescription(airPollution.list[0].main.aqi).text }}</p>
+                                            </div>
+                                            <div class="pollutants-grid">
+                                                <div class="pollutant">
+                                                    <span class="label">PM2.5</span>
+                                                    <span class="value">{{ airPollution.list[0].components.pm2_5 | number:'1.1-1' }}
+                                                        μg/m³</span>
+                                                </div>
+                                                <div class="pollutant">
+                                                    <span class="label">PM10</span>
+                                                    <span class="value">{{ airPollution.list[0].components.pm10 | number:'1.1-1' }}
+                                                        μg/m³</span>
+                                                </div>
+                                                <div class="pollutant">
+                                                    <span class="label">NO2</span>
+                                                    <span class="value">{{ airPollution.list[0].components.no2 | number:'1.1-1' }}
+                                                        μg/m³</span>
+                                                </div>
+                                                <div class="pollutant">
+                                                    <span class="label">O3</span>
+                                                    <span class="value">{{ airPollution.list[0].components.o3 | number:'1.1-1' }}
+                                                        μg/m³</span>
+                                                </div>
+                                                <div class="pollutant">
+                                                    <span class="label">CO</span>
+                                                    <span class="value">{{ airPollution.list[0].components.co | number:'1.1-1' }}
+                                                        μg/m³</span>
+                                                </div>
+                                                <div class="pollutant">
+                                                    <span class="label">SO2</span>
+                                                    <span class="value">{{ airPollution.list[0].components.so2 | number:'1.1-1' }}
+                                                        μg/m³</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+                        </div>
+                    </mat-tab>
+
+                    <mat-tab label="Prognoza 5-dniowa">
+                        <div class="forecast-wrapper" *ngIf="forecast">
+                            <!-- Zastąpienie mat-accordion z zakładkami dla dni -->
+                            <mat-tab-group>
+                                <mat-tab *ngFor="let day of forecast" [label]="day.date">
+                                    <div class="forecast-items-horizontal">
+                                        <mat-card *ngFor="let item of day.forecasts" class="forecast-card">
+                                            <mat-card-header>
+                                                <mat-card-title>{{ item.time }}</mat-card-title>
+                                            </mat-card-header>
+                                            <mat-card-content>
+                                                <div class="forecast-item-content">
+                                                    <div class="temp-section">
+                                                        <p class="temp">{{ item.temp | number:'1.0-0' }} °C</p>
+                                                        <img [src]="'https://openweathermap.org/img/wn/' + item.icon + '.png'"
+                                                             alt="Ikona pogody">
+                                                    </div>
+                                                    <p class="desc">{{ item.description }}</p>
+                                                    <div class="forecast-details">
+                                                        <p>
+                                                            <mat-icon>opacity</mat-icon>
+                                                            {{ item.humidity }}%
+                                                        </p>
+                                                        <p>
+                                                            <mat-icon>compress</mat-icon>
+                                                            {{ item.pressure }} hPa
+                                                        </p>
+                                                        <p>
+                                                            <mat-icon>air</mat-icon>
+                                                            {{ item.wind }} m/s
+                                                        </p>
+                                                        <p>
+                                                            <mat-icon>thermostat</mat-icon>
+                                                            Odczuwalna: {{ item.feels_like | number:'1.0-0' }} °C
+                                                        </p>
+                                                        <p>
+                                                            <mat-icon>visibility</mat-icon>
+                                                            Widoczność: {{ item.visibility | number:'1.1-1' }} km
+                                                        </p>
+                                                        <p>
+                                                            <mat-icon>cloud</mat-icon>
+                                                            Zachmurzenie: {{ item.clouds }}%
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </mat-card-content>
+                                        </mat-card>
+                                    </div>
+                                </mat-tab>
+                            </mat-tab-group>
+                        </div>
+                    </mat-tab>
+                </mat-tab-group>
+            </div>
+        </mat-card-content>
+    </mat-card>
 </div>
