@@ -1,0 +1,88 @@
+<!-- weather-effect.component.html -->
+<div class="weather-effect-container" *ngIf="showEffect">
+  <div class="weather-effect"
+       [ngClass]="[windIntensity, temperatureEffect, pressureEffect, humidityEffect, dayTimeEffect]">
+
+    <!-- Efekty zachmurzenia -->
+    <ng-container *ngIf="hasEffectType('cloudy-light')">
+      <div *ngFor="let i of [].constructor(3); let idx = index" class="cloud light" [style.--i]="idx"></div>
+    </ng-container>
+    <ng-container *ngIf="hasEffectType('cloudy-medium')">
+      <div *ngFor="let i of [].constructor(5); let idx = index" class="cloud medium" [style.--i]="idx"></div>
+    </ng-container>
+    <ng-container *ngIf="hasEffectType('cloudy-heavy')">
+      <div *ngFor="let i of [].constructor(8); let idx = index" class="cloud heavy" [style.--i]="idx"></div>
+    </ng-container>
+
+    <!-- Efekt deszczu -->
+    <ng-container *ngIf="hasEffectType('rain-light')">
+      <div *ngFor="let i of [].constructor(50); let idx = index" class="raindrop light" [style.--i]="idx"></div>
+    </ng-container>
+    <ng-container *ngIf="hasEffectType('rain-heavy')">
+      <div *ngFor="let i of [].constructor(100); let idx = index" class="raindrop heavy" [style.--i]="idx"></div>
+    </ng-container>
+
+    <!-- Efekt śniegu -->
+    <ng-container *ngIf="hasEffectType('snow')">
+      <div *ngFor="let i of [].constructor(50); let idx = index" class="snowflake" [style.--i]="idx"></div>
+    </ng-container>
+
+    <!-- Efekt mgły -->
+    <ng-container *ngIf="hasEffectType('fog')">
+      <div *ngFor="let i of [].constructor(5)" class="fog-layer"></div>
+    </ng-container>
+
+    <!-- Efekt burzy -->
+    <ng-container *ngIf="hasEffectType('thunder')">
+      <div class="thunder"></div>
+    </ng-container>
+
+    <!-- Efekt burzy śnieżnej -->
+    <ng-container *ngIf="hasEffectType('snow') && hasEffectType('thunder')">
+      <div *ngFor="let i of [].constructor(50); let idx = index" class="snowflake" [style.--i]="idx"></div>
+      <div class="thunder"></div>
+    </ng-container>
+
+    <!-- Efekt intensywnych opadów deszczu -->
+    <ng-container *ngIf="hasEffectType('rain-heavy') && hasEffectType('thunder')">
+      <div *ngFor="let i of [].constructor(100); let idx = index" class="raindrop heavy" [style.--i]="idx"></div>
+      <div class="thunder"></div>
+    </ng-container>
+
+    <!-- Efekt pary wodnej przy zimnie -->
+    <ng-container *ngIf="temperatureEffect === 'very-cold' || temperatureEffect === 'extreme-cold'">
+      <div *ngFor="let i of [].constructor(20)" class="frost-breath"></div>
+    </ng-container>
+
+    <!-- Efekt fal ciepła -->
+    <ng-container *ngIf="temperatureEffect === 'hot'">
+      <div class="heat-wave"></div>
+    </ng-container>
+
+    <!-- Efekt wysokiej wilgotności - lekka mgiełka -->
+    <ng-container *ngIf="humidityEffect === 'very-humid'">
+      <div *ngFor="let i of [].constructor(8)" class="humidity-mist"></div>
+    </ng-container>
+
+    <ng-container *ngIf="humidityEffect === 'humid'">
+      <div *ngFor="let i of [].constructor(4)" class="humidity-mist light"></div>
+    </ng-container>
+
+    <!-- Efekt niskiej wilgotności - drobny pył -->
+    <ng-container *ngIf="humidityEffect === 'very-dry'">
+      <div *ngFor="let i of [].constructor(30)" class="dust-particle"></div>
+    </ng-container>
+
+    <!-- Elementy nocne - księżyc i gwiazdy -->
+    <ng-container *ngIf="hasEffectType('clear-night')">
+      <div class="moon"></div>
+      <div *ngFor="let i of [].constructor(50); let idx = index" class="star" [style.--i]="idx"></div>
+    </ng-container>
+
+    <!-- Słońce dla dnia -->
+    <ng-container *ngIf="hasEffectType('sunny')">
+      <div class="sun"></div>
+      <div class="sun-rays"></div>
+    </ng-container>
+  </div>
+</div>
