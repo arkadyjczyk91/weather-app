@@ -4,7 +4,6 @@ on:
   push:
     branches: [ "master" ]
 
-# Uprawnienia potrzebne do wdrożenia
 permissions:
   contents: write
   pages: write
@@ -13,33 +12,35 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      
+
     - name: Konfiguracja Node.js
       uses: actions/setup-node@v4
       with:
         node-version: 18.x
         cache: 'npm'
-        
+
     - name: Instalacja zależności
       run: npm ci
-      
-    - name: Sprawdzenie struktury katalogu dist po budowaniu
+
+    - name: Aktualizacja package.json
       run: |
-        npm run build
-        ls -la dist
-        ls -la dist/weather-app-api || echo "Katalog dist/weather-app-api nie istnieje"
-        ls -la dist/weather-app-api/browser || echo "Katalog dist/weather-app-api/browser nie istnieje"
-      
+        npm pkg set scripts.build:github="ng build --base-href=/weather-app/"
+
     - name: Budowanie aplikacji z poprawną ścieżką bazową
-      run: ng build --base-href=/weather-app/
-      
+      run: npm run build:github
+
+    - name: Sprawdzenie struktury katalogu dist
+      run: |
+        ls -la dist
+        find dist -type d | sort
+
     - name: Wdrożenie na GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
-        folder: dist/weather-app-api
+        folder: dist/weather-app-api/browser # Dostosuj tę ścieżkę na podstawie rzeczywistej struktury
         branch: gh-pages
         token: ${{ secrets.GITHUB_TOKEN }}
