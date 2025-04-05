@@ -27,13 +27,13 @@
               {
                 "glob": "**/*",
                 "input": "./node_modules/leaflet/dist/images",
-                "output": "assets/leaflet"
+                "output": "assets/images/leaflet"
               }
             ],
             "styles": [
               "@angular/material/prebuilt-themes/magenta-violet.css",
               "src/styles.css",
-              "node_modules/leaflet/dist/leaflet.css"
+              "./node_modules/leaflet/dist/leaflet.css"
             ],
             "scripts": []
           },
