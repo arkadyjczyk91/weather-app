@@ -26,21 +26,11 @@ jobs:
     - name: Instalacja zależności
       run: npm ci
 
-    - name: Aktualizacja package.json
-      run: |
-        npm pkg set scripts.build:github="ng build --base-href=/weather-app/"
-
-    - name: Budowanie aplikacji z poprawną ścieżką bazową
-      run: npm run build:github
-
-    - name: Sprawdzenie struktury katalogu dist
-      run: |
-        ls -la dist
-        find dist -type d | sort
+    - name: Budowanie aplikacji
+      run: npm run build:gh
 
     - name: Wdrożenie na GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        folder: dist/weather-app-api/browser # Dostosuj tę ścieżkę na podstawie rzeczywistej struktury
-        branch: gh-pages
-        token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "github-actions@github.com"
+        npx angular-cli-ghpages --dir=dist/weather-app-api --no-silent
