@@ -9,8 +9,7 @@
     "test": "ng test",
     "build:gh": "ng build --configuration production --base-href=/weather-app/",
     "deploy:gh": "npx angular-cli-ghpages --dir=dist/weather-app-api"
-  }
-},
+  },
   "private": true,
   "dependencies": {
     "@angular/cdk": "^19.2.8",
