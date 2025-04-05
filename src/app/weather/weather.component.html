@@ -1,12 +1,12 @@
 <app-weather-effect
-        *ngIf="weather"
+        *ngIf="weather && locationLocalTime"
         [weatherCode]="weather.weather[0].icon"
         [windSpeed]="weather.wind.speed"
         [temperature]="weather.main.temp"
         [pressure]="weather.main.pressure"
         [humidity]="weather.main.humidity"
         [time]="(locationLocalTime | date:'HH:mm') ?? '12:00'"
-        [duration]="60000">
+        [duration]="-1"> <!-- Ustawienie efektów bez limitu czasu -->
 </app-weather-effect>
 <div class="weather-container">
     <mat-card>

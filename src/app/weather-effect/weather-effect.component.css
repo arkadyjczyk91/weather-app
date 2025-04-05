@@ -61,11 +61,14 @@
   }
 }
 
-/* Efekt słońca */
+/* Kontener słońca i promieni */
+.sun-container {
+  position: absolute;
+}
+
+/* Słońce */
 .sun {
   position: absolute;
-  top: 50px;
-  right: 100px;
   width: 80px;
   height: 80px;
   background: radial-gradient(circle, rgba(255, 236, 95, 1) 0%, rgba(255, 167, 38, 1) 100%);
@@ -74,21 +77,20 @@
   animation: shine 8s infinite alternate;
 }
 
+/* Promienie słońca */
 .sun-rays {
   position: absolute;
-  top: 50px;
-  right: 100px;
   width: 120px;
   height: 120px;
   background: transparent;
-  transform: translate(10px, 10px);
+  transform: translate(-20px, -20px);
 }
 
 .sun-rays::before {
   content: "";
   position: absolute;
-  top: -20px;
-  left: -20px;
+  top: 0;
+  left: 0;
   width: 120px;
   height: 120px;
   background: transparent;
@@ -677,21 +679,42 @@
   }
 }
 
-/* Modyfikacje dla słońca w różnych porach dnia */
+/* Modyfikacje pozycji kontenera dla różnych pór dnia */
+.weather-effect.morning .sun-container {
+  top: 150px;
+  left: 100px;
+}
+
+.weather-effect.day .sun-container {
+  top: 50px;
+  right: 100px;
+}
+
+.weather-effect.evening .sun-container {
+  bottom: 150px;
+  right: 100px;
+}
+
+/* Modyfikacje wyglądu słońca */
 .weather-effect.morning .sun {
   background: radial-gradient(circle, rgba(255, 236, 95, 1) 0%, rgba(255, 167, 38, 1) 100%);
   opacity: 0.85;
-  top: 150px;
-  left: 100px;
   box-shadow: 0 0 50px rgba(255, 180, 50, 0.6);
 }
 
 .weather-effect.evening .sun {
   background: radial-gradient(circle, rgba(255, 160, 70, 1) 0%, rgba(255, 100, 50, 1) 100%);
   opacity: 0.9;
-  bottom: 150px;
-  right: 100px;
   box-shadow: 0 0 50px rgba(255, 100, 40, 0.6);
+}
+
+/* Modyfikacje promieni */
+.weather-effect.morning .sun-rays::before {
+  box-shadow: 0 0 80px 40px rgba(255, 180, 50, 0.5);
+}
+
+.weather-effect.evening .sun-rays::before {
+  box-shadow: 0 0 80px 40px rgba(255, 100, 40, 0.5);
 }
 
 /* Modyfikacje dla chmur w zależności od pory dnia */

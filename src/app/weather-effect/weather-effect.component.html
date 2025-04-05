@@ -1,5 +1,5 @@
 <!-- weather-effect.component.html -->
-<div class="weather-effect-container" *ngIf="showEffect">
+<div class="weather-effect-container" #effectsContainer>
   <div class="weather-effect"
        [ngClass]="[windIntensity, temperatureEffect, pressureEffect, humidityEffect, dayTimeEffect]">
 
@@ -80,9 +80,9 @@
     </ng-container>
 
     <!-- Słońce dla dnia -->
-    <ng-container *ngIf="hasEffectType('sunny')">
+    <div class="sun-container" *ngIf="hasEffectType('sunny')">
       <div class="sun"></div>
       <div class="sun-rays"></div>
-    </ng-container>
+    </div>
   </div>
 </div>

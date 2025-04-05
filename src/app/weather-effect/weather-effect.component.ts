@@ -1,5 +1,5 @@
 // weather-effect.component.ts
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, AfterViewInit, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 
 @Component({
@@ -9,34 +9,48 @@ import {CommonModule} from '@angular/common';
   standalone: true,
   imports: [CommonModule]
 })
-export class WeatherEffectComponent implements OnChanges {
+export class WeatherEffectComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() weatherCode!: string;
   @Input() windSpeed: number = 0; // prędkość wiatru w m/s
-  @Input() duration: number = 30000;
+  @Input() duration: number = -1; // -1 oznacza "bez limitu"
   @Input() temperature: number = 20; // temperatura w °C
   @Input() pressure: number = 1013; // ciśnienie w hPa
   @Input() humidity: number = 50; // wilgotność w procentach (%)
   @Input() time: string = '12:00'; // Lokalny czas w formacie HH:MM
 
+  @ViewChild('effectsContainer') effectsContainer!: ElementRef;
+
   dayTimeEffect: string = 'day'; // możliwe wartości: morning, day, evening, night
-  effectTypes: string[] = []; // teraz przechowujemy listę efektów
+  effectTypes: string[] = []; // przechowuje listę efektów
   showEffect: boolean = false;
   windIntensity: string = 'none'; // none, light, medium, strong
   temperatureEffect: string = 'normal';
   pressureEffect: string = 'normal';
   humidityEffect: string = 'normal';
 
- ngOnChanges(changes: SimpleChanges): void {
-   if (changes['weatherCode'] || changes['windSpeed'] || changes['temperature'] ||
-       changes['pressure'] || changes['humidity'] || changes['time']) {
-     this.determineEffectTypes();
-     this.determineWindIntensity();
-     this.determineTemperatureEffect();
-     this.determinePressureEffect();
-     this.determineHumidityEffect();
-     this.showEffectForDuration();
-   }
- }
+  private animationTimers: number[] = []; // identyfikatory timerów do czyszczenia
+
+  ngAfterViewInit() {
+    // Uruchom efekty po załadowaniu widoku
+    this.determineEffectTypes();
+    this.determineWindIntensity();
+    this.determineTemperatureEffect();
+    this.determinePressureEffect();
+    this.determineHumidityEffect();
+    this.showEffectForDuration();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['weatherCode'] || changes['windSpeed'] || changes['temperature'] ||
+      changes['pressure'] || changes['humidity'] || changes['time']) {
+      this.determineEffectTypes();
+      this.determineWindIntensity();
+      this.determineTemperatureEffect();
+      this.determinePressureEffect();
+      this.determineHumidityEffect();
+      this.showEffectForDuration();
+    }
+  }
 
   private determineDayTimeEffect(): void {
     if (!this.time) {
@@ -192,17 +206,40 @@ export class WeatherEffectComponent implements OnChanges {
     }
   }
 
-  private showEffectForDuration(): void {
-    if (this.effectTypes.length === 0) return;
+  public refreshEffects(): void {
+    this.showEffect = false;
+    setTimeout(() => {
+      this.showEffect = true;
+    }, 10);
+  }
 
+  private showEffectForDuration(): void {
     this.showEffect = true;
 
-    setTimeout(() => {
-      this.showEffect = false;
-    }, this.duration);
+    // Zatrzymaj efekty tylko wtedy, gdy duration jest dodatnie
+    if (this.duration > 0) {
+      this.clearTimers();
+      const timerId = window.setTimeout(() => {
+        this.showEffect = false;
+      }, this.duration);
+      this.animationTimers.push(timerId);
+    }
+  }
+
+  private clearTimers(): void {
+    // Wyczyść wszystkie timery
+    this.animationTimers.forEach(timerId => {
+      window.clearTimeout(timerId);
+    });
+    this.animationTimers = [];
   }
 
   hasEffectType(type: string): boolean {
     return this.effectTypes.includes(type);
+  }
+
+  // Metoda do czyszczenia zasobów przy zniszczeniu komponentu
+  ngOnDestroy(): void {
+    this.clearTimers();
   }
 }
