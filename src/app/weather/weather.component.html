@@ -11,7 +11,7 @@
 <div class="weather-container">
     <mat-card>
         <mat-card-header>
-            <mat-card-title>Pogoda</mat-card-title>
+            <mat-card-title>{{ 'app.title' | translate }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
             <!-- Układ dwukolumnowy -->
@@ -20,8 +20,8 @@
                 <div class="left-column">
                     <div class="search-container">
                         <mat-form-field appearance="outline" class="full-width">
-                            <mat-label>Wprowadź nazwę miasta</mat-label>
-                            <input matInput [(ngModel)]="city" placeholder="np. Warszawa"
+                            <mat-label>{{ 'search.input.label' | translate }}</mat-label>
+                            <input matInput [(ngModel)]="city" [placeholder]="'search.input.placeholder' | translate"
                                    (input)="onSearchInput($event)">
 
                             <mat-progress-spinner matSuffix *ngIf="isSearching" diameter="20"
@@ -40,7 +40,7 @@
 
                         <button mat-raised-button color="primary" (click)="getWeather()">
                             <mat-icon>search</mat-icon>
-                            Sprawdź pogodę
+                            {{ 'search.button' | translate }}
                         </button>
                     </div>
 
@@ -54,13 +54,13 @@
                             <mat-card-title>{{ weather.name }}, {{ weather.sys.country }}</mat-card-title>
                         </mat-card-header>
                         <div class="time-box">
-                            <h3>Czas lokalny użytkownika</h3>
+                            <h3>{{ 'time.userLocal' | translate }}</h3>
                             <p class="time">{{ userLocalTime | date:'HH:mm:ss' }}</p>
                             <p class="date">{{ userLocalTime | date:'dd.MM.yyyy' }}</p>
                             <p class="timezone">{{ userLocalTime | date:'ZZZZ' }}</p>
                         </div>
                         <div class="time-box" *ngIf="locationLocalTime">
-                            <h3>Czas w {{ weather.name }}</h3>
+                            <h3>{{ 'time.locationLocal' | translate }} {{ weather.name }}</h3>
                             <p class="time">
                                 {{ locationLocalTime | date:'HH:mm:ss' }}
                                 <span class="day-period">({{ getDayTimePeriodName(locationLocalTime) }})</span>
@@ -76,14 +76,14 @@
                     <div class="map-section">
                         <div class="map-controls">
                             <mat-form-field appearance="outline">
-                                <mat-label>Warstwa pogodowa</mat-label>
+                                <mat-label>{{ 'map.layer.label' | translate }}</mat-label>
                                 <mat-select [(ngModel)]="selectedLayer" (selectionChange)="onLayerChange()">
                                     <mat-option *ngFor="let layer of mapLayers" [value]="layer.value">
                                         {{ layer.label }}
                                     </mat-option>
                                 </mat-select>
                             </mat-form-field>
-                            <p class="map-hint">Kliknij na mapę, aby sprawdzić pogodę dla wybranego miejsca</p>
+                            <p class="map-hint">{{ 'map.hint' | translate }}</p>
                         </div>
                         <div id="map" class="map-container"></div>
                     </div>
@@ -93,7 +93,7 @@
             <!-- Sekcja z informacjami o pogodzie -->
             <div *ngIf="weather" class="weather-data">
                 <mat-tab-group [(selectedIndex)]="activeTab" animationDuration="0ms">
-                    <mat-tab label="Aktualna pogoda">
+                    <mat-tab [label]="'tab.current' | translate">
                         <div class="weather-result">
                             <mat-card>
                                 <mat-card-content>
@@ -110,39 +110,38 @@
                                     <!-- Sekcja z detalami i jakością powietrza obok siebie -->
                                     <div class="details-air-quality-container">
                                         <div class="details-section">
-                                            <h3>Szczegółowe informacje</h3>
+                                            <h3>{{ 'weather.details' | translate }}</h3>
                                             <div class="additional-info">
                                                 <p>
                                                     <mat-icon>opacity</mat-icon>
-                                                    Wilgotność: {{ weather.main.humidity }}%
+                                                    {{ 'weather.humidity' | translate }}: {{ weather.main.humidity }}%
                                                 </p>
                                                 <p>
                                                     <mat-icon>compress</mat-icon>
-                                                    Ciśnienie: {{ weather.main.pressure }} hPa
+                                                    {{ 'weather.pressure' | translate }}: {{ weather.main.pressure }} hPa
                                                 </p>
                                                 <p>
                                                     <mat-icon>air</mat-icon>
-                                                    Wiatr: {{ weather.wind.speed }} m/s
+                                                    {{ 'weather.wind' | translate }}: {{ weather.wind.speed }} m/s
                                                 </p>
                                                 <p>
                                                     <mat-icon>thermostat</mat-icon>
-                                                    Temperatura
-                                                    odczuwalna: {{ weather.main.feels_like | number:'1.0-0' }} °C
+                                                    {{ 'weather.feelsLike' | translate }}: {{ weather.main.feels_like | number:'1.0-0' }} °C
                                                 </p>
                                                 <p>
                                                     <mat-icon>visibility</mat-icon>
-                                                    Widoczność: {{ weather.visibility / 1000 | number:'1.1-1' }} km
+                                                    {{ 'weather.visibility' | translate }}: {{ weather.visibility / 1000 | number:'1.1-1' }} km
                                                 </p>
                                                 <p *ngIf="weather.clouds">
                                                     <mat-icon>cloud</mat-icon>
-                                                    Zachmurzenie: {{ weather.clouds.all }}%
+                                                    {{ 'weather.cloudiness' | translate }}: {{ weather.clouds.all }}%
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div class="air-quality-section"
                                              *ngIf="airPollution && airPollution.list && airPollution.list.length > 0">
-                                            <h3>Jakość powietrza</h3>
+                                            <h3>{{ 'air.quality' | translate }}</h3>
                                             <div class="air-quality-info">
                                                 <div class="aqi-badge"
                                                      [style.background-color]="getAqiDescription(airPollution.list[0].main.aqi).color">
@@ -189,7 +188,7 @@
                         </div>
                     </mat-tab>
 
-                    <mat-tab label="Prognoza 5-dniowa">
+                    <mat-tab [label]="'tab.forecast' | translate">
                         <div class="forecast-wrapper" *ngIf="forecast">
                             <!-- Zastąpienie mat-accordion z zakładkami dla dni -->
                             <mat-tab-group>
@@ -222,15 +221,15 @@
                                                         </p>
                                                         <p>
                                                             <mat-icon>thermostat</mat-icon>
-                                                            Odczuwalna: {{ item.feels_like | number:'1.0-0' }} °C
+                                                            {{ 'forecast.feelsLike' | translate }}: {{ item.feels_like | number:'1.0-0' }} °C
                                                         </p>
                                                         <p>
                                                             <mat-icon>visibility</mat-icon>
-                                                            Widoczność: {{ item.visibility | number:'1.1-1' }} km
+                                                            {{ 'weather.visibility' | translate }}: {{ item.visibility | number:'1.1-1' }} km
                                                         </p>
                                                         <p>
                                                             <mat-icon>cloud</mat-icon>
-                                                            Zachmurzenie: {{ item.clouds }}%
+                                                            {{ 'weather.cloudiness' | translate }}: {{ item.clouds }}%
                                                         </p>
                                                     </div>
                                                 </div>

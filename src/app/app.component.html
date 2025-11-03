@@ -1,1 +1,22 @@
-<app-weather></app-weather>
+<div class="app-container">
+  <header class="app-header">
+    <div class="header-content">
+      <h1>{{ 'app.title' | translate }}</h1>
+      <div class="language-switcher">
+        <button mat-button 
+                [class.active]="localeService.language === 'pl'"
+                (click)="changeLanguage('pl')">
+          {{ 'language.polish' | translate }}
+        </button>
+        <button mat-button 
+                [class.active]="localeService.language === 'en'"
+                (click)="changeLanguage('en')">
+          {{ 'language.english' | translate }}
+        </button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <app-weather></app-weather>
+  </main>
+</div>
