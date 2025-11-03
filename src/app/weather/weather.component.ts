@@ -28,15 +28,24 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
   map: L.Map | null = null;
   selectedLayer: string = 'clouds_new';
 
-  // Zmienne dla czasu
+  // Variables for time
   userLocalTime: Date = new Date();
   locationLocalTime: Date | null = null;
   locationTimezone: string = '';
   timeInterval: any;
 
-  // Zmienne dla wyszukiwania
+  // Variables for search
   searchResults: any[] = [];
   isSearching = false;
+
+  // Air quality colors
+  private readonly aqiColors: { [key: number]: string } = {
+    1: '#009966',
+    2: '#ffde33',
+    3: '#ff9933',
+    4: '#cc0033',
+    5: '#660099'
+  };
 
   get mapLayers() {
     return [
@@ -141,38 +150,19 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getAqiDescription(aqi: number): { text: string, color: string } {
-    let textKey: string;
-    switch (aqi) {
-      case 1:
-        textKey = 'air.veryGood';
-        break;
-      case 2:
-        textKey = 'air.good';
-        break;
-      case 3:
-        textKey = 'air.moderate';
-        break;
-      case 4:
-        textKey = 'air.bad';
-        break;
-      case 5:
-        textKey = 'air.veryBad';
-        break;
-      default:
-        textKey = 'air.noData';
-    }
-    
-    const colors: { [key: number]: string } = {
-      1: '#009966',
-      2: '#ffde33',
-      3: '#ff9933',
-      4: '#cc0033',
-      5: '#660099'
+    const aqiTranslationKeys: { [key: number]: string } = {
+      1: 'air.veryGood',
+      2: 'air.good',
+      3: 'air.moderate',
+      4: 'air.bad',
+      5: 'air.veryBad'
     };
+    
+    const textKey = aqiTranslationKeys[aqi] || 'air.noData';
     
     return {
       text: this.localeService.translate(textKey),
-      color: colors[aqi] || '#999999'
+      color: this.aqiColors[aqi] || '#999999'
     };
   }
 
