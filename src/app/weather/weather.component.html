@@ -78,7 +78,7 @@
                             <mat-form-field appearance="outline">
                                 <mat-label>{{ 'map.layer.label' | translate }}</mat-label>
                                 <mat-select [(ngModel)]="selectedLayer" (selectionChange)="onLayerChange()">
-                                    <mat-option *ngFor="let layer of mapLayers" [value]="layer.value">
+                                    <mat-option *ngFor="let layer of mapLayers()" [value]="layer.value">
                                         {{ layer.label }}
                                     </mat-option>
                                 </mat-select>

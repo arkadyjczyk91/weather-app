@@ -1,5 +1,5 @@
 // src/app/weather/weather.component.ts
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, computed} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {WeatherService} from '../weather.service';
@@ -47,15 +47,14 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
     5: '#660099'
   };
 
-  get mapLayers() {
-    return [
-      {value: 'clouds_new', label: this.localeService.translate('map.layer.clouds')},
-      {value: 'precipitation_new', label: this.localeService.translate('map.layer.precipitation')},
-      {value: 'pressure_new', label: this.localeService.translate('map.layer.pressure')},
-      {value: 'wind_new', label: this.localeService.translate('map.layer.wind')},
-      {value: 'temp_new', label: this.localeService.translate('map.layer.temperature')}
-    ];
-  }
+  // Memoized map layers that update when language changes
+  readonly mapLayers = computed(() => [
+    {value: 'clouds_new', label: this.localeService.translate('map.layer.clouds')},
+    {value: 'precipitation_new', label: this.localeService.translate('map.layer.precipitation')},
+    {value: 'pressure_new', label: this.localeService.translate('map.layer.pressure')},
+    {value: 'wind_new', label: this.localeService.translate('map.layer.wind')},
+    {value: 'temp_new', label: this.localeService.translate('map.layer.temperature')}
+  ]);
 
   currentTileLayer: L.TileLayer | null = null;
   weatherTileLayer: L.TileLayer | null = null;
