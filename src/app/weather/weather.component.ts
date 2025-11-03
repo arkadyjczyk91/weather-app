@@ -1,5 +1,5 @@
 // src/app/weather/weather.component.ts
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, computed} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {WeatherService} from '../weather.service';
@@ -8,11 +8,13 @@ import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 import * as L from 'leaflet';
 import { WeatherEffectComponent } from '../weather-effect/weather-effect.component';
+import { LocaleService } from '../locale.service';
+import { TranslatePipe } from '../translate.pipe';
 
 @Component({
   selector: 'app-weather',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, WeatherEffectComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, WeatherEffectComponent, TranslatePipe],
   templateUrl: './weather.component.html',
   styleUrls: ['./weather.component.css']
 })
@@ -26,23 +28,33 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
   map: L.Map | null = null;
   selectedLayer: string = 'clouds_new';
 
-  // Zmienne dla czasu
+  // Variables for time
   userLocalTime: Date = new Date();
   locationLocalTime: Date | null = null;
   locationTimezone: string = '';
   timeInterval: any;
 
-  // Zmienne dla wyszukiwania
+  // Variables for search
   searchResults: any[] = [];
   isSearching = false;
 
-  mapLayers = [
-    {value: 'clouds_new', label: 'Chmury'},
-    {value: 'precipitation_new', label: 'Opady'},
-    {value: 'pressure_new', label: 'Ciśnienie'},
-    {value: 'wind_new', label: 'Wiatr'},
-    {value: 'temp_new', label: 'Temperatura'}
-  ];
+  // Air quality colors
+  private readonly aqiColors: { [key: number]: string } = {
+    1: '#009966',
+    2: '#ffde33',
+    3: '#ff9933',
+    4: '#cc0033',
+    5: '#660099'
+  };
+
+  // Memoized map layers that update when language changes
+  readonly mapLayers = computed(() => [
+    {value: 'clouds_new', label: this.localeService.translate('map.layer.clouds')},
+    {value: 'precipitation_new', label: this.localeService.translate('map.layer.precipitation')},
+    {value: 'pressure_new', label: this.localeService.translate('map.layer.pressure')},
+    {value: 'wind_new', label: this.localeService.translate('map.layer.wind')},
+    {value: 'temp_new', label: this.localeService.translate('map.layer.temperature')}
+  ]);
 
   currentTileLayer: L.TileLayer | null = null;
   weatherTileLayer: L.TileLayer | null = null;
@@ -51,7 +63,10 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private searchTerms = new Subject<string>();
 
-  constructor(private weatherService: WeatherService) {
+  constructor(
+    private weatherService: WeatherService,
+    public localeService: LocaleService
+  ) {
   }
 
   ngOnInit() {
@@ -90,11 +105,11 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
         this.searchResults = data;
         this.isSearching = false;
         if (data.length === 0 && term.length >= 3) {
-          this.errorMessage = 'Nie znaleziono pasujących miejscowości';
+          this.errorMessage = this.localeService.translate('search.error.notFound');
         }
       },
       error: (error) => {
-        console.error('Błąd podczas wyszukiwania:', error);
+        console.error('Error during search:', error);
         this.isSearching = false;
         this.searchResults = [];
       }
@@ -134,20 +149,20 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getAqiDescription(aqi: number): { text: string, color: string } {
-    switch (aqi) {
-      case 1:
-        return {text: 'Bardzo dobra', color: '#009966'};
-      case 2:
-        return {text: 'Dobra', color: '#ffde33'};
-      case 3:
-        return {text: 'Umiarkowana', color: '#ff9933'};
-      case 4:
-        return {text: 'Zła', color: '#cc0033'};
-      case 5:
-        return {text: 'Bardzo zła', color: '#660099'};
-      default:
-        return {text: 'Brak danych', color: '#999999'};
-    }
+    const aqiTranslationKeys: { [key: number]: string } = {
+      1: 'air.veryGood',
+      2: 'air.good',
+      3: 'air.moderate',
+      4: 'air.bad',
+      5: 'air.veryBad'
+    };
+    
+    const textKey = aqiTranslationKeys[aqi] || 'air.noData';
+    
+    return {
+      text: this.localeService.translate(textKey),
+      color: this.aqiColors[aqi] || '#999999'
+    };
   }
 
   private initMap() {
@@ -266,7 +281,7 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Błąd podczas pobierania danych geokodowania:', error);
+        console.error('Error retrieving geocoding data:', error);
         this.city = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
       },
       complete: () => {
@@ -287,8 +302,8 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
         this.updateLocationTime();
       },
       error: (error) => {
-        this.errorMessage = 'Błąd podczas pobierania danych pogodowych.';
-        console.error('Błąd podczas pobierania danych pogodowych:', error);
+        this.errorMessage = this.localeService.translate('search.error.network');
+        console.error('Error retrieving weather data:', error);
       }
     });
 
@@ -298,7 +313,7 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
         this.forecast = this.processForecastData(data);
       },
       error: (error) => {
-        console.error('Błąd podczas pobierania prognozy:', error);
+        console.error('Error retrieving forecast:', error);
       }
     });
 
@@ -308,19 +323,19 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
         this.airPollution = data;
       },
       error: (error) => {
-        console.error('Błąd podczas pobierania danych o jakości powietrza:', error);
+        console.error('Error retrieving air quality data:', error);
       }
     });
   }
 
   getWeather() {
     if (!this.city) {
-      this.errorMessage = 'Wprowadź nazwę miasta';
+      this.errorMessage = this.localeService.translate('search.error.empty');
       return;
     }
 
     if (this.city.length < 3) {
-      this.errorMessage = 'Nazwa miasta musi zawierać co najmniej 3 znaki';
+      this.errorMessage = this.localeService.translate('search.error.tooShort');
       return;
     }
 
@@ -338,7 +353,7 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
               this.airPollution = airData;
             },
             error: (error) => {
-              console.error('Błąd podczas pobierania danych o jakości powietrza:', error);
+              console.error('Error retrieving air quality data:', error);
             }
           });
 
@@ -348,15 +363,14 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
           // Pobierz wszystkie pozostałe dane
           this.loadWeatherData(data[0].lat, data[0].lon);
         } else {
-          // Dodanie obsługi pustej odpowiedzi (brak wyników)
-          this.errorMessage = 'Nie znaleziono podanej miejscowości. Sprawdź pisownię i spróbuj ponownie.';
+          this.errorMessage = this.localeService.translate('search.error.notFoundDetailed');
         }
         this.isSearching = false; // Zakończenie ładowania
       },
       error: (error) => {
-        console.error('Błąd podczas pobierania współrzędnych:', error);
-        this.errorMessage = 'Nie udało się znaleźć miejscowości. Sprawdź połączenie internetowe i spróbuj ponownie.';
-        this.isSearching = false; // Zakończenie ładowania w przypadku błędu
+        console.error('Error retrieving coordinates:', error);
+        this.errorMessage = this.localeService.translate('search.error.network');
+        this.isSearching = false;
       }
     });
   }
@@ -382,14 +396,14 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
 
     data.list.forEach((item: any) => {
       const date = new Date(item.dt * 1000);
-      const day = date.toLocaleDateString('pl-PL');
+      const day = date.toLocaleDateString(this.localeService.getLocaleCode());
 
       if (!groupedByDate[day]) {
         groupedByDate[day] = [];
       }
 
       groupedByDate[day].push({
-        time: date.toLocaleTimeString('pl-PL', {hour: '2-digit', minute: '2-digit'}),
+        time: date.toLocaleTimeString(this.localeService.getLocaleCode(), {hour: '2-digit', minute: '2-digit'}),
         temp: item.main.temp,
         feels_like: item.main.feels_like,
         description: item.weather[0].description,
@@ -422,12 +436,6 @@ export class WeatherComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getDayTimePeriodName(date: Date): string {
     const period = this.getDayTimePeriod(date);
-    switch (period) {
-      case 'morning': return 'ranek';
-      case 'day': return 'dzień';
-      case 'evening': return 'wieczór';
-      case 'night': return 'noc';
-      default: return '';
-    }
+    return this.localeService.translate(`time.${period}`);
   }
 }

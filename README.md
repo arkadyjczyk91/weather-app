@@ -1,6 +1,24 @@
 # WeatherAppApi
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.6.
+This project is a weather application built with Angular that provides current weather information, 5-day forecasts, air quality data, and interactive weather maps for any location worldwide.
+
+## Features
+
+- 🌍 **Multi-language Support**: Available in English and Polish
+- 🗺️ **Interactive Maps**: View weather layers including clouds, precipitation, pressure, wind, and temperature
+- 🌤️ **Current Weather**: Real-time weather data with detailed information
+- 📅 **5-Day Forecast**: Hourly forecasts organized by day
+- 💨 **Air Quality**: Air pollution data with AQI ratings
+- 🕐 **Time Zones**: Display local time for selected locations
+- 🔍 **Smart Search**: Location search with autocomplete
+
+## Language Support
+
+The application supports two languages:
+- **Polish (Polski)** - Default language
+- **English** - Available through the language switcher in the header
+
+Users can switch between languages at any time using the language toggle buttons in the header. The selected language is automatically saved and persisted across sessions.
 
 ## Development server
 
@@ -53,6 +71,21 @@ ng e2e
 ```
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Internationalization (i18n)
+
+The application uses a custom runtime translation system for multi-language support:
+
+- **LocaleService**: Manages language selection and provides translations
+- **TranslatePipe**: Angular pipe for translating text in templates
+- **Supported Languages**: Polish (`pl`) and English (`en`)
+- **Persistence**: Selected language is saved in browser's localStorage
+
+To add a new language:
+
+1. Add translations to the `translations` object in `src/app/locale.service.ts`
+2. Update the `SupportedLanguage` type if needed
+3. Add language selection button in the header
 
 ## Additional Resources
 
